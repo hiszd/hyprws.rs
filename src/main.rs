@@ -8,13 +8,16 @@ extern crate serde_json;
 use clap::Parser;
 use serde_derive::{Deserialize, Serialize};
 use serde_json::Value;
-use std::os::unix::net::{UnixListener, UnixStream};
 use std::process::Command;
 use std::thread;
 use std::{env, ops::IndexMut};
 use std::{
     fmt,
     io::{Read, Write},
+};
+use std::{
+    io,
+    os::unix::net::{UnixListener, UnixStream},
 };
 use std::{
     io::{BufRead, BufReader},
@@ -87,10 +90,12 @@ enum Events {
 }
 
 impl std::convert::From<&str> for Events {
-    fn from(value: &str) -> Self {
+    fn from(value: &str) -> Result<Self, io::Error> {
         for e in Events {
             if value == e.to_string() {
-                return e;
+                return Some(e);
+            } else {
+                return Error;
             }
         }
     }
