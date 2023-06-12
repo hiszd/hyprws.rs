@@ -8,9 +8,9 @@ extern crate serde_json;
 use clap::Parser;
 use serde_derive::{Deserialize, Serialize};
 use serde_json::Value;
-use std::process::Command;
 use std::thread;
 use std::{env, ops::IndexMut};
+use std::{error::Error, process::Command};
 use std::{
     fmt,
     io::{Read, Write},
@@ -63,73 +63,6 @@ struct Wksp {
     lastwindowtitle: String,
 }
 
-#[derive(Clone, Copy, Debug)]
-enum Events {
-    workspace,
-    focusedmon,
-    activewindow,
-    activewindowv2,
-    fullscreen,
-    monitorremoved,
-    monitoradded,
-    createworkspace,
-    destroyworkspace,
-    moveworkspace,
-    activelayout,
-    openwindow,
-    closewindow,
-    movewindow,
-    openlayer,
-    closelayer,
-    submap,
-    changefloatingmode,
-    urgent,
-    minimize,
-    screencast,
-    windowtitle,
-}
-
-impl std::convert::From<&str> for Events {
-    fn from(value: &str) -> Result<Self, io::Error> {
-        for e in Events {
-            if value == e.to_string() {
-                return Some(e);
-            } else {
-                return Error;
-            }
-        }
-    }
-}
-
-impl fmt::Display for Events {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Events::workspace => write!(f, "workspace"),
-            Events::focusedmon => write!(f, "focusedmon"),
-            Events::activewindow => write!(f, "activewindow"),
-            Events::activewindowv2 => write!(f, "activewindowv2"),
-            Events::fullscreen => write!(f, "fullscreen"),
-            Events::monitorremoved => write!(f, "monitorremoved"),
-            Events::monitoradded => write!(f, "monitoradded"),
-            Events::createworkspace => write!(f, "createworkspace"),
-            Events::destroyworkspace => write!(f, "destroyworkspace"),
-            Events::moveworkspace => write!(f, "moveworkspace"),
-            Events::activelayout => write!(f, "activelayout"),
-            Events::openwindow => write!(f, "openwindow"),
-            Events::closewindow => write!(f, "closewindow"),
-            Events::movewindow => write!(f, "movewindow"),
-            Events::openlayer => write!(f, "openlayer"),
-            Events::closelayer => write!(f, "closelayer"),
-            Events::submap => write!(f, "submap"),
-            Events::changefloatingmode => write!(f, "changefloatingmode"),
-            Events::urgent => write!(f, "urgent"),
-            Events::minimize => write!(f, "minimize"),
-            Events::screencast => write!(f, "screencast"),
-            Events::windowtitle => write!(f, "windowtitle"),
-        }
-    }
-}
-
 #[derive(Parser, Debug, Clone)]
 #[command(author, version, about, long_about = None)]
 struct Args {
@@ -154,7 +87,8 @@ fn main() {
         .unwrap();
 
     let monstr = String::from_utf8(monoutput.stdout).unwrap();
-    let monjson: Vec<Mon> = serde_json::from_str(&monstr).unwrap();
+    let mut monjson: Vec<Mon> = serde_json::from_str(&monstr).unwrap();
+    println!("{:?}", monjson[0]);
 
     let wsoutput = Command::new("/usr/bin/hyprctl")
         .arg("workspaces")
@@ -163,38 +97,96 @@ fn main() {
         .unwrap();
 
     let wsstr = String::from_utf8(wsoutput.stdout).unwrap();
-    let wsjson: Vec<Wksp> = serde_json::from_str(&wsstr).unwrap();
+    let mut wsjson: Vec<Wksp> = serde_json::from_str(&wsstr).unwrap();
 
     let mut stream = UnixStream::connect(path).unwrap();
 
     let stream = BufReader::new(stream);
     for line in stream.lines() {
-        println!("{:?}", line.unwrap());
-        let arr = line.unwrap().find(">>");
-        let e: Events = line.unwrap()[0..arr].into();
+        // println!("{:?}", line.as_ref().unwrap());
+        let arr = line.as_ref().unwrap().find(">>").unwrap();
+        let e = &line.as_ref().unwrap()[0..arr];
+        let args: Vec<&str> = line.as_ref().unwrap()[(arr + 2)..].split(',').collect();
+        let argsstring = args.join(" ");
         match e {
-            Events::workspace => {}
-            Events::focusedmon => {}
-            Events::activewindow => {}
-            Events::activewindowv2 => {}
-            Events::fullscreen => {}
-            Events::monitorremoved => {}
-            Events::monitoradded => {}
-            Events::createworkspace => {}
-            Events::destroyworkspace => {}
-            Events::moveworkspace => {}
-            Events::activelayout => {}
-            Events::openwindow => {}
-            Events::closewindow => {}
-            Events::movewindow => {}
-            Events::openlayer => {}
-            Events::closelayer => {}
-            Events::submap => {}
-            Events::changefloatingmode => {}
-            Events::urgent => {}
-            Events::minimize => {}
-            Events::screencast => {}
-            Events::windowtitle => {}
+            "workspace" => {
+                let wsnum: i32 = args[0].parse().unwrap();
+                let wksp: &Wksp = wsjson.iter().find(|&e| e.id == wsnum).unwrap();
+                monjson = monjson.iter().to_owned().map(|&e| {
+                    if e.id = wksp.monitor {
+                        e.activeWorkspace = wksp.id;
+                    }
+                    return e;
+                });
+                println!("{:?}", wksp.id);
+                println!("workspace: {}\n", &argsstring);
+            }
+            "focusedmon" => {
+                println!("focusedmon: {:?}\n", &argsstring);
+            }
+            "activewindow" => {
+                println!("activewindow: {:?}\n", &argsstring);
+            }
+            "activewindowv2" => {
+                println!("activewindowv2: {:?}\n", &argsstring);
+            }
+            "fullscreen" => {
+                println!("fullscreen: {:?}\n", &argsstring);
+            }
+            "monitorremoved" => {
+                println!("monitorremoved: {:?}\n", &argsstring);
+            }
+            "monitoradded" => {
+                println!("monitoradded: {:?}\n", &argsstring);
+            }
+            "createworkspace" => {
+                println!("createworkspace: {:?}\n", &argsstring);
+            }
+            "destroyworkspace" => {
+                println!("destroyworkspace: {:?}\n", &argsstring);
+            }
+            "moveworkspace" => {
+                println!("moveworkspace: {:?}\n", &argsstring);
+            }
+            "activelayout" => {
+                println!("activelayout: {:?}\n", &argsstring);
+            }
+            "openwindow" => {
+                println!("openwindow: {:?}\n", &argsstring);
+            }
+            "closewindow" => {
+                println!("closewindow: {:?}\n", &argsstring);
+            }
+            "movewindow" => {
+                println!("movewindow: {:?}\n", &argsstring);
+            }
+            "openlayer" => {
+                println!("openlayer: {:?}\n", &argsstring);
+            }
+            "closelayer" => {
+                println!("closelayer: {:?}\n", &argsstring);
+            }
+            "submap" => {
+                println!("submap: {:?}\n", &argsstring);
+            }
+            "changefloatingmode" => {
+                println!("changefloatingmode: {:?}\n", &argsstring);
+            }
+            "urgent" => {
+                println!("urgent: {:?}\n", &argsstring);
+            }
+            "minimize" => {
+                println!("minimize: {:?}\n", &argsstring);
+            }
+            "screencast" => {
+                println!("screencast: {:?}\n", &argsstring);
+            }
+            "windowtitle" => {
+                println!("windowtitle: {:?}\n", &argsstring);
+            }
+            _ => {
+                println!("nothing\n");
+            }
         }
     }
 
