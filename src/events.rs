@@ -81,3 +81,12 @@ impl From<String> for Events {
         }
     }
 }
+
+#[derive(Debug)]
+pub struct Event<F>
+where
+    F: Fn(),
+{
+    event: Events,
+    pub action: F,
+}

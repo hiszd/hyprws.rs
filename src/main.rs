@@ -4,7 +4,7 @@
 
 mod events;
 
-use events::Events;
+use events::{Events,Event};
 
 extern crate clap;
 extern crate serde_derive;
@@ -74,12 +74,6 @@ struct Args {
     monitor: u32,
 }
 
-#[derive(Debug)]
-struct Event {
-    event: Events,
-    action: fn(),
-}
-
 fn main() {
     // get hyprland instance for socket path
     let hyprland_instance = env::var("HYPRLAND_INSTANCE_SIGNATURE").unwrap();
@@ -117,10 +111,6 @@ fn main() {
         let arr = e.as_ref().unwrap().find(">>").unwrap();
         let x = e.as_ref().unwrap()[0..arr];
         let args: Vec<&str> = e.as_ref().unwrap()[(arr + 2)..].split(',').collect();
-        Event {
-event: Events::from(x),
-action: bob() {},
-        }
     }).collect()
 
     for line in stream.lines() {
