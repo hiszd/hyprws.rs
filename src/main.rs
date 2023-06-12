@@ -2,6 +2,10 @@
 #![allow(non_snake_case)]
 #![allow(non_camel_case_types)]
 
+mod events;
+
+use events::Events;
+
 extern crate clap;
 extern crate serde_derive;
 extern crate serde_json;
@@ -70,6 +74,12 @@ struct Args {
     monitor: u32,
 }
 
+#[derive(Debug)]
+struct Event {
+    event: Events,
+    action: fn(),
+}
+
 fn main() {
     // get hyprland instance for socket path
     let hyprland_instance = env::var("HYPRLAND_INSTANCE_SIGNATURE").unwrap();
@@ -102,92 +112,23 @@ fn main() {
     let mut stream = UnixStream::connect(path).unwrap();
 
     let stream = BufReader::new(stream);
+
+    let events: [Event] = stream.lines().into_iter().map(|&e| {
+        let arr = e.as_ref().unwrap().find(">>").unwrap();
+        let x = e.as_ref().unwrap()[0..arr];
+        let args: Vec<&str> = e.as_ref().unwrap()[(arr + 2)..].split(',').collect();
+        Event {
+event: Events::from(x),
+action: bob() {},
+        }
+    }).collect()
+
     for line in stream.lines() {
         // println!("{:?}", line.as_ref().unwrap());
         let arr = line.as_ref().unwrap().find(">>").unwrap();
         let e = &line.as_ref().unwrap()[0..arr];
         let args: Vec<&str> = line.as_ref().unwrap()[(arr + 2)..].split(',').collect();
         let argsstring = args.join(" ");
-        match e {
-            "workspace" => {
-                let wsnum: i32 = args[0].parse().unwrap();
-                let wksp: &Wksp = wsjson.iter().find(|&e| e.id == wsnum).unwrap();
-                monjson = monjson.iter().to_owned().map(|&e| {
-                    if e.id = wksp.monitor {
-                        e.activeWorkspace = wksp.id;
-                    }
-                    return e;
-                });
-                println!("{:?}", wksp.id);
-                println!("workspace: {}\n", &argsstring);
-            }
-            "focusedmon" => {
-                println!("focusedmon: {:?}\n", &argsstring);
-            }
-            "activewindow" => {
-                println!("activewindow: {:?}\n", &argsstring);
-            }
-            "activewindowv2" => {
-                println!("activewindowv2: {:?}\n", &argsstring);
-            }
-            "fullscreen" => {
-                println!("fullscreen: {:?}\n", &argsstring);
-            }
-            "monitorremoved" => {
-                println!("monitorremoved: {:?}\n", &argsstring);
-            }
-            "monitoradded" => {
-                println!("monitoradded: {:?}\n", &argsstring);
-            }
-            "createworkspace" => {
-                println!("createworkspace: {:?}\n", &argsstring);
-            }
-            "destroyworkspace" => {
-                println!("destroyworkspace: {:?}\n", &argsstring);
-            }
-            "moveworkspace" => {
-                println!("moveworkspace: {:?}\n", &argsstring);
-            }
-            "activelayout" => {
-                println!("activelayout: {:?}\n", &argsstring);
-            }
-            "openwindow" => {
-                println!("openwindow: {:?}\n", &argsstring);
-            }
-            "closewindow" => {
-                println!("closewindow: {:?}\n", &argsstring);
-            }
-            "movewindow" => {
-                println!("movewindow: {:?}\n", &argsstring);
-            }
-            "openlayer" => {
-                println!("openlayer: {:?}\n", &argsstring);
-            }
-            "closelayer" => {
-                println!("closelayer: {:?}\n", &argsstring);
-            }
-            "submap" => {
-                println!("submap: {:?}\n", &argsstring);
-            }
-            "changefloatingmode" => {
-                println!("changefloatingmode: {:?}\n", &argsstring);
-            }
-            "urgent" => {
-                println!("urgent: {:?}\n", &argsstring);
-            }
-            "minimize" => {
-                println!("minimize: {:?}\n", &argsstring);
-            }
-            "screencast" => {
-                println!("screencast: {:?}\n", &argsstring);
-            }
-            "windowtitle" => {
-                println!("windowtitle: {:?}\n", &argsstring);
-            }
-            _ => {
-                println!("nothing\n");
-            }
-        }
     }
 
     if let Some(exit_code) = monoutput.status.code() {
