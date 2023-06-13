@@ -30,27 +30,30 @@ use std::{
     io::{BufRead, BufReader},
     path::Path,
 };
+use strum::IntoEnumIterator;
 
-#[derive(Debug, Serialize, Deserialize)]
-struct Aws {
-    id: u32,
-    name: String,
+use crate::events::{EventBuilder, EventHandler};
+
+#[derive(Debug, Serialize, Deserialize, Copy, Clone)]
+struct Aws<'a> {
+    id: i32,
+    name: &'a str,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-struct Mon {
+#[derive(Debug, Serialize, Deserialize, Copy, Clone)]
+struct Mon<'a> {
     id: i32,
-    name: String,
-    description: String,
-    make: String,
-    model: String,
-    serial: String,
+    name: &'a str,
+    description: &'a str,
+    make: &'a str,
+    model: &'a str,
+    serial: &'a str,
     width: u32,
     height: u32,
     refreshRate: f32,
     x: u32,
     y: u32,
-    activeWorkspace: Aws,
+    activeWorkspace: Aws<'a>,
     reserved: [u32; 4],
     scale: f32,
     transform: u32,
@@ -59,15 +62,33 @@ struct Mon {
     vrr: bool,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-struct Wksp {
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct MonList<'a> {
+    pub monitors: Vec<Mon<'a>>,
+}
+
+impl MonList<'_> {
+    pub fn find(&self) {}
+}
+
+#[derive(Debug, Serialize, Deserialize, Copy, Clone)]
+struct Wksp<'a> {
     id: i32,
-    name: String,
-    monitor: String,
+    name: &'a str,
+    monitor: &'a str,
     windows: u32,
     hasfullscreen: bool,
-    lastwindow: String,
-    lastwindowtitle: String,
+    lastwindow: &'a str,
+    lastwindowtitle: &'a str,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct WkspList<'a> {
+    pub workspaces: Vec<Wksp<'a>>,
+}
+
+impl WkspList<'_> {
+    pub fn find(&self) {}
 }
 
 #[derive(Parser, Debug, Clone)]
@@ -94,7 +115,7 @@ fn main() -> ! {
         .unwrap();
 
     let monstr = String::from_utf8(monoutput.stdout).unwrap();
-    let mut monjson: Vec<Mon> = serde_json::from_str(&monstr).unwrap();
+    let mut mon: Vec<Mon> = serde_json::from_str(&monstr).unwrap();
     // println!("{:?}", monjson[0]);
 
     let wsoutput = Command::new("/usr/bin/hyprctl")
@@ -104,7 +125,7 @@ fn main() -> ! {
         .unwrap();
 
     let wsstr = String::from_utf8(wsoutput.stdout).unwrap();
-    let mut wsjson: Vec<Wksp> = serde_json::from_str(&wsstr).unwrap();
+    let mut ws: WkspList = serde_json::from_str(&wsstr).unwrap();
 
     loop {
         let mut strm = UnixStream::connect(path).unwrap();
@@ -115,6 +136,8 @@ fn main() -> ! {
             let arr = e.as_ref().unwrap().find(">>").unwrap();
             let x = &e.as_ref().unwrap()[0..arr];
             let args: Vec<&str> = e.as_ref().unwrap()[(arr + 2)..].split(',').collect();
+            let e = EventBuilder::new(x);
+            let (wsn, monn) = e.EventHandler(ws, mon);
             println!("{}", x);
         })
     }

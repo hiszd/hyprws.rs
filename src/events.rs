@@ -1,125 +1,180 @@
-struct Workspace;
+use crate::{Aws, Mon, MonList, Wksp, WkspList};
+
+#[derive(Default)]
+pub struct Workspace;
 impl EventHandler for Workspace {
-    fn EventHandler(&self) {}
+    fn EventHandler(&self, ws: WkspList, mon: MonList, args: Vec<&str>) -> (WkspList, MonList) {
+        let mut monid: String;
+        let mut aws: Aws;
+        ws.workspaces.into_iter().for_each(|e| {
+            if e.id == args[0].parse::<i32>().unwrap() {
+                monid = e.monitor.to_string();
+                aws = Aws {
+                    id: e.id,
+                    name: e.name,
+                };
+            }
+        });
+        let monr: MonList = MonList {
+            monitors: mon
+                .monitors
+                .iter()
+                .map(|e| {
+                    if e.name == monid {
+                        e.activeWorkspace = aws;
+                    }
+                    return e.to_owned();
+                })
+                .collect(),
+        };
+        return (ws, monr);
+    }
 }
-struct Focusedmon;
+#[derive(Default)]
+pub struct Focusedmon;
 impl EventHandler for Focusedmon {
-    fn EventHandler(&self) {}
+    fn EventHandler(&self, ws: WkspList, mon: MonList, args: Vec<&str>) -> (WkspList, MonList) {}
 }
-struct ActiveWindow;
+#[derive(Default)]
+pub struct ActiveWindow;
 impl EventHandler for ActiveWindow {
-    fn EventHandler(&self) {}
+    fn EventHandler(&self, ws: WkspList, mon: MonList, args: Vec<&str>) -> (WkspList, MonList) {}
 }
-struct ActiveWindowv2;
+#[derive(Default)]
+pub struct ActiveWindowv2;
 impl EventHandler for ActiveWindowv2 {
-    fn EventHandler(&self) {}
+    fn EventHandler(&self, ws: WkspList, mon: MonList, args: Vec<&str>) -> (WkspList, MonList) {}
 }
-struct Fullscreen;
+#[derive(Default)]
+pub struct Fullscreen;
 impl EventHandler for Fullscreen {
-    fn EventHandler(&self) {}
+    fn EventHandler(&self, ws: WkspList, mon: MonList, args: Vec<&str>) -> (WkspList, MonList) {}
 }
-struct MonitorRemoved;
+#[derive(Default)]
+pub struct MonitorRemoved;
 impl EventHandler for MonitorRemoved {
-    fn EventHandler(&self) {}
+    fn EventHandler(&self, ws: WkspList, mon: MonList, args: Vec<&str>) -> (WkspList, MonList) {}
 }
-struct MonitorAdded;
+#[derive(Default)]
+pub struct MonitorAdded;
 impl EventHandler for MonitorAdded {
-    fn EventHandler(&self) {}
+    fn EventHandler(&self, ws: WkspList, mon: MonList, args: Vec<&str>) -> (WkspList, MonList) {}
 }
-struct CreateWorkspace;
+#[derive(Default)]
+pub struct CreateWorkspace;
 impl EventHandler for CreateWorkspace {
-    fn EventHandler(&self) {}
+    fn EventHandler(&self, ws: WkspList, mon: MonList, args: Vec<&str>) -> (WkspList, MonList) {}
 }
-struct DestroyWorkspace;
+#[derive(Default)]
+pub struct DestroyWorkspace;
 impl EventHandler for DestroyWorkspace {
-    fn EventHandler(&self) {}
+    fn EventHandler(&self, ws: WkspList, mon: MonList, args: Vec<&str>) -> (WkspList, MonList) {}
 }
-struct MoveWorkspace;
+#[derive(Default)]
+pub struct MoveWorkspace;
 impl EventHandler for MoveWorkspace {
-    fn EventHandler(&self) {}
+    fn EventHandler(&self, ws: WkspList, mon: MonList, args: Vec<&str>) -> (WkspList, MonList) {}
 }
-struct ActiveLayout;
+#[derive(Default)]
+pub struct ActiveLayout;
 impl EventHandler for ActiveLayout {
-    fn EventHandler(&self) {}
+    fn EventHandler(&self, ws: WkspList, mon: MonList, args: Vec<&str>) -> (WkspList, MonList) {}
 }
-struct OpenWindow;
+#[derive(Default)]
+pub struct OpenWindow;
 impl EventHandler for OpenWindow {
-    fn EventHandler(&self) {}
+    fn EventHandler(&self, ws: WkspList, mon: MonList, args: Vec<&str>) -> (WkspList, MonList) {}
 }
-struct CloseWindow;
+#[derive(Default)]
+pub struct CloseWindow;
 impl EventHandler for CloseWindow {
-    fn EventHandler(&self) {}
+    fn EventHandler(&self, ws: WkspList, mon: MonList, args: Vec<&str>) -> (WkspList, MonList) {}
 }
-struct MoveWindow;
+#[derive(Default)]
+pub struct MoveWindow;
 impl EventHandler for MoveWindow {
-    fn EventHandler(&self) {}
+    fn EventHandler(&self, ws: WkspList, mon: MonList, args: Vec<&str>) -> (WkspList, MonList) {}
 }
-struct OpenLayer;
+#[derive(Default)]
+pub struct OpenLayer;
 impl EventHandler for OpenLayer {
-    fn EventHandler(&self) {}
+    fn EventHandler(&self, ws: WkspList, mon: MonList, args: Vec<&str>) -> (WkspList, MonList) {}
 }
-struct CloseLayer;
+#[derive(Default)]
+pub struct CloseLayer;
 impl EventHandler for CloseLayer {
-    fn EventHandler(&self) {}
+    fn EventHandler(&self, ws: WkspList, mon: MonList, args: Vec<&str>) -> (WkspList, MonList) {}
 }
-struct Submap;
+#[derive(Default)]
+pub struct Submap;
 impl EventHandler for Submap {
-    fn EventHandler(&self) {}
+    fn EventHandler(&self, ws: WkspList, mon: MonList, args: Vec<&str>) -> (WkspList, MonList) {}
 }
-struct ChangeFloatingMode;
+#[derive(Default)]
+pub struct ChangeFloatingMode;
 impl EventHandler for ChangeFloatingMode {
-    fn EventHandler(&self) {}
+    fn EventHandler(&self, ws: WkspList, mon: MonList, args: Vec<&str>) -> (WkspList, MonList) {}
 }
-struct Urgent;
+#[derive(Default)]
+pub struct Urgent;
 impl EventHandler for Urgent {
-    fn EventHandler(&self) {}
+    fn EventHandler(&self, ws: WkspList, mon: MonList, args: Vec<&str>) -> (WkspList, MonList) {}
 }
-struct Minimize;
+#[derive(Default)]
+pub struct Minimize;
 impl EventHandler for Minimize {
-    fn EventHandler(&self) {}
+    fn EventHandler(&self, ws: WkspList, mon: MonList, args: Vec<&str>) -> (WkspList, MonList) {}
 }
-struct Screencast;
+#[derive(Default)]
+pub struct Screencast;
 impl EventHandler for Screencast {
-    fn EventHandler(&self) {}
+    fn EventHandler(&self, ws: WkspList, mon: MonList, args: Vec<&str>) -> (WkspList, MonList) {}
 }
-struct WindowTitle;
+#[derive(Default)]
+pub struct WindowTitle;
 impl EventHandler for WindowTitle {
-    fn EventHandler(&self) {}
+    fn EventHandler(&self, ws: WkspList, mon: MonList, args: Vec<&str>) -> (WkspList, MonList) {}
 }
 
-#[derive(AsRefStr)]
-enum Events {
-    Workspace(Workspace),
-    Focusedmon(Focusedmon),
-    ActiveWindow(ActiveWindow),
-    ActiveWindowv2(ActiveWindowv2),
-    Fullscreen(Fullscreen),
-    MonitorRemoved(MonitorRemoved),
-    MonitorAdded(MonitorAdded),
-    CreateWorkspace(CreateWorkspace),
-    DestroyWorkspace(DestroyWorkspace),
-    MoveWorkspace(MoveWorkspace),
-    ActiveLayout(ActiveLayout),
-    OpenWindow(OpenWindow),
-    CloseWindow(CloseWindow),
-    MoveWindow(MoveWindow),
-    OpenLayer(OpenLayer),
-    CloseLayer(CloseLayer),
-    Submap(Submap),
-    ChangeFloatingMode(ChangeFloatingMode),
-    Urgent(Urgent),
-    Minimize(Minimize),
-    Screencast(Screencast),
-    WindowTitle(WindowTitle),
+pub struct EventBuilder;
+
+impl EventBuilder {
+    pub fn new(e: &str) -> Box<dyn EventHandler> {
+        match e {
+            "workspace" => Box::new(Workspace {}),
+            "focusedmon" => Box::new(Focusedmon {}),
+            "activewindow" => Box::new(ActiveWindow {}),
+            "activewindowv2" => Box::new(ActiveWindowv2 {}),
+            "fullscreen" => Box::new(Fullscreen {}),
+            "montorremoved" => Box::new(MonitorRemoved {}),
+            "montoradded" => Box::new(MonitorAdded {}),
+            "createworkspace" => Box::new(CreateWorkspace {}),
+            "destroyworkspace" => Box::new(DestroyWorkspace {}),
+            "moveworkspace" => Box::new(MoveWorkspace {}),
+            "activelayout" => Box::new(ActiveLayout {}),
+            "openwindow" => Box::new(OpenWindow {}),
+            "closewindow" => Box::new(CloseWindow {}),
+            "movewindow" => Box::new(MoveWindow {}),
+            "openlayer" => Box::new(OpenLayer {}),
+            "closelayer" => Box::new(CloseLayer {}),
+            "submap" => Box::new(Submap {}),
+            "changefloatingmode" => Box::new(ChangeFloatingMode {}),
+            "urgent" => Box::new(Urgent {}),
+            "minimize" => Box::new(Minimize {}),
+            "screencast" => Box::new(Screencast {}),
+            "windowtitle" => Box::new(WindowTitle {}),
+            _ => Box::new(WindowTitle {}),
+        }
+    }
 }
 
 pub trait EventHandler {
-    fn EventHandler(&self);
+    fn EventHandler(&self, ws: WkspList, mon: MonList, args: Vec<&str>) -> (WkspList, MonList);
 }
 
 pub struct Event<T>
 where
     T: EventHandler,
 {
-    event: T,
+    pub event: T,
 }
