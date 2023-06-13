@@ -68,7 +68,28 @@ pub struct MonList<'a> {
 }
 
 impl MonList<'_> {
-    pub fn find(&self) {}
+    pub fn findById(&self, id: i32) -> (Mon, usize) {
+        let mut mon: Mon;
+        let mut idx: usize;
+        self.monitors.iter().enumerate().for_each(|(i, e)| {
+            if e.id == id {
+                mon = e.to_owned();
+                idx = i;
+            }
+        });
+        return (mon, idx);
+    }
+    pub fn findByName(&self, name: &str) -> (Mon, usize) {
+        let mut mon: Mon;
+        let mut idx: usize;
+        self.monitors.iter().enumerate().for_each(|(i, e)| {
+            if e.name == name {
+                mon = e.to_owned();
+                idx = i;
+            }
+        });
+        return (mon, idx);
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize, Copy, Clone)]
@@ -88,7 +109,24 @@ pub struct WkspList<'a> {
 }
 
 impl WkspList<'_> {
-    pub fn find(&self) {}
+    pub fn findById(&self, id: i32) -> usize {
+        let mut idx: usize;
+        self.workspaces.iter().enumerate().for_each(|(i, e)| {
+            if e.id == id {
+                idx = i;
+            }
+        });
+        return idx;
+    }
+    pub fn findByName(&self, name: &str) -> usize {
+        let mut idx: usize;
+        self.workspaces.iter().enumerate().for_each(|(i, e)| {
+            if e.name == name {
+                idx = i;
+            }
+        });
+        return idx;
+    }
 }
 
 #[derive(Parser, Debug, Clone)]
@@ -107,6 +145,8 @@ fn main() -> ! {
     let path = Path::new(&filepath);
 
     let args = Args::parse();
+
+    let mut focusedmonid: i32;
 
     let monoutput = Command::new("/usr/bin/hyprctl")
         .arg("monitors")

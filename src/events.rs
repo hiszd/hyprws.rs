@@ -4,23 +4,18 @@ use crate::{Aws, Mon, MonList, Wksp, WkspList};
 pub struct Workspace;
 impl EventHandler for Workspace {
     fn EventHandler(&self, ws: WkspList, mon: MonList, args: Vec<&str>) -> (WkspList, MonList) {
-        let mut monid: String;
-        let mut aws: Aws;
-        ws.workspaces.into_iter().for_each(|e| {
-            if e.id == args[0].parse::<i32>().unwrap() {
-                monid = e.monitor.to_string();
-                aws = Aws {
-                    id: e.id,
-                    name: e.name,
-                };
-            }
-        });
+        let wsid = ws.findById(args[0].parse::<i32>().unwrap());
+        let mut aws: Aws = Aws {
+            id: ws.workspaces[wsid].id,
+            name: ws.workspaces[wsid].name,
+        };
+        let monnm = ws.workspaces[wsid].monitor;
         let monr: MonList = MonList {
             monitors: mon
                 .monitors
                 .iter()
                 .map(|e| {
-                    if e.name == monid {
+                    if e.name == monnm {
                         e.activeWorkspace = aws;
                     }
                     return e.to_owned();
@@ -33,107 +28,527 @@ impl EventHandler for Workspace {
 #[derive(Default)]
 pub struct Focusedmon;
 impl EventHandler for Focusedmon {
-    fn EventHandler(&self, ws: WkspList, mon: MonList, args: Vec<&str>) -> (WkspList, MonList) {}
+    fn EventHandler(&self, ws: WkspList, mon: MonList, args: Vec<&str>) -> (WkspList, MonList) {
+        let wsid = ws.findById(args[0].parse::<i32>().unwrap());
+        let mut aws: Aws = Aws {
+            id: ws.workspaces[wsid].id,
+            name: ws.workspaces[wsid].name,
+        };
+        let monnm = ws.workspaces[wsid].monitor;
+        let monr: MonList = MonList {
+            monitors: mon
+                .monitors
+                .iter()
+                .map(|e| {
+                    if e.name == monnm {
+                        e.activeWorkspace = aws;
+                    }
+                    return e.to_owned();
+                })
+                .collect(),
+        };
+        return (ws, monr);
+    }
 }
 #[derive(Default)]
 pub struct ActiveWindow;
 impl EventHandler for ActiveWindow {
-    fn EventHandler(&self, ws: WkspList, mon: MonList, args: Vec<&str>) -> (WkspList, MonList) {}
+    fn EventHandler(&self, ws: WkspList, mon: MonList, args: Vec<&str>) -> (WkspList, MonList) {
+        let wsid = ws.findById(args[0].parse::<i32>().unwrap());
+        let mut aws: Aws = Aws {
+            id: ws.workspaces[wsid].id,
+            name: ws.workspaces[wsid].name,
+        };
+        let monnm = ws.workspaces[wsid].monitor;
+        let monr: MonList = MonList {
+            monitors: mon
+                .monitors
+                .iter()
+                .map(|e| {
+                    if e.name == monnm {
+                        e.activeWorkspace = aws;
+                    }
+                    return e.to_owned();
+                })
+                .collect(),
+        };
+        return (ws, monr);
+    }
 }
 #[derive(Default)]
 pub struct ActiveWindowv2;
 impl EventHandler for ActiveWindowv2 {
-    fn EventHandler(&self, ws: WkspList, mon: MonList, args: Vec<&str>) -> (WkspList, MonList) {}
+    fn EventHandler(&self, ws: WkspList, mon: MonList, args: Vec<&str>) -> (WkspList, MonList) {
+        let wsid = ws.findById(args[0].parse::<i32>().unwrap());
+        let mut aws: Aws = Aws {
+            id: ws.workspaces[wsid].id,
+            name: ws.workspaces[wsid].name,
+        };
+        let monnm = ws.workspaces[wsid].monitor;
+        let monr: MonList = MonList {
+            monitors: mon
+                .monitors
+                .iter()
+                .map(|e| {
+                    if e.name == monnm {
+                        e.activeWorkspace = aws;
+                    }
+                    return e.to_owned();
+                })
+                .collect(),
+        };
+        return (ws, monr);
+    }
 }
 #[derive(Default)]
 pub struct Fullscreen;
 impl EventHandler for Fullscreen {
-    fn EventHandler(&self, ws: WkspList, mon: MonList, args: Vec<&str>) -> (WkspList, MonList) {}
+    fn EventHandler(&self, ws: WkspList, mon: MonList, args: Vec<&str>) -> (WkspList, MonList) {
+        let wsid = ws.findById(args[0].parse::<i32>().unwrap());
+        let mut aws: Aws = Aws {
+            id: ws.workspaces[wsid].id,
+            name: ws.workspaces[wsid].name,
+        };
+        let monnm = ws.workspaces[wsid].monitor;
+        let monr: MonList = MonList {
+            monitors: mon
+                .monitors
+                .iter()
+                .map(|e| {
+                    if e.name == monnm {
+                        e.activeWorkspace = aws;
+                    }
+                    return e.to_owned();
+                })
+                .collect(),
+        };
+        return (ws, monr);
+    }
 }
 #[derive(Default)]
 pub struct MonitorRemoved;
 impl EventHandler for MonitorRemoved {
-    fn EventHandler(&self, ws: WkspList, mon: MonList, args: Vec<&str>) -> (WkspList, MonList) {}
+    fn EventHandler(&self, ws: WkspList, mon: MonList, args: Vec<&str>) -> (WkspList, MonList) {
+        let wsid = ws.findById(args[0].parse::<i32>().unwrap());
+        let mut aws: Aws = Aws {
+            id: ws.workspaces[wsid].id,
+            name: ws.workspaces[wsid].name,
+        };
+        let monnm = ws.workspaces[wsid].monitor;
+        let monr: MonList = MonList {
+            monitors: mon
+                .monitors
+                .iter()
+                .map(|e| {
+                    if e.name == monnm {
+                        e.activeWorkspace = aws;
+                    }
+                    return e.to_owned();
+                })
+                .collect(),
+        };
+        return (ws, monr);
+    }
 }
 #[derive(Default)]
 pub struct MonitorAdded;
 impl EventHandler for MonitorAdded {
-    fn EventHandler(&self, ws: WkspList, mon: MonList, args: Vec<&str>) -> (WkspList, MonList) {}
+    fn EventHandler(&self, ws: WkspList, mon: MonList, args: Vec<&str>) -> (WkspList, MonList) {
+        let wsid = ws.findById(args[0].parse::<i32>().unwrap());
+        let mut aws: Aws = Aws {
+            id: ws.workspaces[wsid].id,
+            name: ws.workspaces[wsid].name,
+        };
+        let monnm = ws.workspaces[wsid].monitor;
+        let monr: MonList = MonList {
+            monitors: mon
+                .monitors
+                .iter()
+                .map(|e| {
+                    if e.name == monnm {
+                        e.activeWorkspace = aws;
+                    }
+                    return e.to_owned();
+                })
+                .collect(),
+        };
+        return (ws, monr);
+    }
 }
 #[derive(Default)]
 pub struct CreateWorkspace;
 impl EventHandler for CreateWorkspace {
-    fn EventHandler(&self, ws: WkspList, mon: MonList, args: Vec<&str>) -> (WkspList, MonList) {}
+    fn EventHandler(&self, ws: WkspList, mon: MonList, args: Vec<&str>) -> (WkspList, MonList) {
+        let wsid = ws.findById(args[0].parse::<i32>().unwrap());
+        let mut aws: Aws = Aws {
+            id: ws.workspaces[wsid].id,
+            name: ws.workspaces[wsid].name,
+        };
+        let monnm = ws.workspaces[wsid].monitor;
+        let monr: MonList = MonList {
+            monitors: mon
+                .monitors
+                .iter()
+                .map(|e| {
+                    if e.name == monnm {
+                        e.activeWorkspace = aws;
+                    }
+                    return e.to_owned();
+                })
+                .collect(),
+        };
+        return (ws, monr);
+    }
 }
 #[derive(Default)]
 pub struct DestroyWorkspace;
 impl EventHandler for DestroyWorkspace {
-    fn EventHandler(&self, ws: WkspList, mon: MonList, args: Vec<&str>) -> (WkspList, MonList) {}
+    fn EventHandler(&self, ws: WkspList, mon: MonList, args: Vec<&str>) -> (WkspList, MonList) {
+        let wsid = ws.findById(args[0].parse::<i32>().unwrap());
+        let mut aws: Aws = Aws {
+            id: ws.workspaces[wsid].id,
+            name: ws.workspaces[wsid].name,
+        };
+        let monnm = ws.workspaces[wsid].monitor;
+        let monr: MonList = MonList {
+            monitors: mon
+                .monitors
+                .iter()
+                .map(|e| {
+                    if e.name == monnm {
+                        e.activeWorkspace = aws;
+                    }
+                    return e.to_owned();
+                })
+                .collect(),
+        };
+        return (ws, monr);
+    }
 }
 #[derive(Default)]
 pub struct MoveWorkspace;
 impl EventHandler for MoveWorkspace {
-    fn EventHandler(&self, ws: WkspList, mon: MonList, args: Vec<&str>) -> (WkspList, MonList) {}
+    fn EventHandler(&self, ws: WkspList, mon: MonList, args: Vec<&str>) -> (WkspList, MonList) {
+        let wsid = ws.findById(args[0].parse::<i32>().unwrap());
+        let mut aws: Aws = Aws {
+            id: ws.workspaces[wsid].id,
+            name: ws.workspaces[wsid].name,
+        };
+        let monnm = ws.workspaces[wsid].monitor;
+        let monr: MonList = MonList {
+            monitors: mon
+                .monitors
+                .iter()
+                .map(|e| {
+                    if e.name == monnm {
+                        e.activeWorkspace = aws;
+                    }
+                    return e.to_owned();
+                })
+                .collect(),
+        };
+        return (ws, monr);
+    }
 }
 #[derive(Default)]
 pub struct ActiveLayout;
 impl EventHandler for ActiveLayout {
-    fn EventHandler(&self, ws: WkspList, mon: MonList, args: Vec<&str>) -> (WkspList, MonList) {}
+    fn EventHandler(&self, ws: WkspList, mon: MonList, args: Vec<&str>) -> (WkspList, MonList) {
+        let wsid = ws.findById(args[0].parse::<i32>().unwrap());
+        let mut aws: Aws = Aws {
+            id: ws.workspaces[wsid].id,
+            name: ws.workspaces[wsid].name,
+        };
+        let monnm = ws.workspaces[wsid].monitor;
+        let monr: MonList = MonList {
+            monitors: mon
+                .monitors
+                .iter()
+                .map(|e| {
+                    if e.name == monnm {
+                        e.activeWorkspace = aws;
+                    }
+                    return e.to_owned();
+                })
+                .collect(),
+        };
+        return (ws, monr);
+    }
 }
 #[derive(Default)]
 pub struct OpenWindow;
 impl EventHandler for OpenWindow {
-    fn EventHandler(&self, ws: WkspList, mon: MonList, args: Vec<&str>) -> (WkspList, MonList) {}
+    fn EventHandler(&self, ws: WkspList, mon: MonList, args: Vec<&str>) -> (WkspList, MonList) {
+        let wsid = ws.findById(args[0].parse::<i32>().unwrap());
+        let mut aws: Aws = Aws {
+            id: ws.workspaces[wsid].id,
+            name: ws.workspaces[wsid].name,
+        };
+        let monnm = ws.workspaces[wsid].monitor;
+        let monr: MonList = MonList {
+            monitors: mon
+                .monitors
+                .iter()
+                .map(|e| {
+                    if e.name == monnm {
+                        e.activeWorkspace = aws;
+                    }
+                    return e.to_owned();
+                })
+                .collect(),
+        };
+        return (ws, monr);
+    }
 }
 #[derive(Default)]
 pub struct CloseWindow;
 impl EventHandler for CloseWindow {
-    fn EventHandler(&self, ws: WkspList, mon: MonList, args: Vec<&str>) -> (WkspList, MonList) {}
+    fn EventHandler(&self, ws: WkspList, mon: MonList, args: Vec<&str>) -> (WkspList, MonList) {
+        let wsid = ws.findById(args[0].parse::<i32>().unwrap());
+        let mut aws: Aws = Aws {
+            id: ws.workspaces[wsid].id,
+            name: ws.workspaces[wsid].name,
+        };
+        let monnm = ws.workspaces[wsid].monitor;
+        let monr: MonList = MonList {
+            monitors: mon
+                .monitors
+                .iter()
+                .map(|e| {
+                    if e.name == monnm {
+                        e.activeWorkspace = aws;
+                    }
+                    return e.to_owned();
+                })
+                .collect(),
+        };
+        return (ws, monr);
+    }
 }
 #[derive(Default)]
 pub struct MoveWindow;
 impl EventHandler for MoveWindow {
-    fn EventHandler(&self, ws: WkspList, mon: MonList, args: Vec<&str>) -> (WkspList, MonList) {}
+    fn EventHandler(&self, ws: WkspList, mon: MonList, args: Vec<&str>) -> (WkspList, MonList) {
+        let wsid = ws.findById(args[0].parse::<i32>().unwrap());
+        let mut aws: Aws = Aws {
+            id: ws.workspaces[wsid].id,
+            name: ws.workspaces[wsid].name,
+        };
+        let monnm = ws.workspaces[wsid].monitor;
+        let monr: MonList = MonList {
+            monitors: mon
+                .monitors
+                .iter()
+                .map(|e| {
+                    if e.name == monnm {
+                        e.activeWorkspace = aws;
+                    }
+                    return e.to_owned();
+                })
+                .collect(),
+        };
+        return (ws, monr);
+    }
 }
 #[derive(Default)]
 pub struct OpenLayer;
 impl EventHandler for OpenLayer {
-    fn EventHandler(&self, ws: WkspList, mon: MonList, args: Vec<&str>) -> (WkspList, MonList) {}
+    fn EventHandler(&self, ws: WkspList, mon: MonList, args: Vec<&str>) -> (WkspList, MonList) {
+        let wsid = ws.findById(args[0].parse::<i32>().unwrap());
+        let mut aws: Aws = Aws {
+            id: ws.workspaces[wsid].id,
+            name: ws.workspaces[wsid].name,
+        };
+        let monnm = ws.workspaces[wsid].monitor;
+        let monr: MonList = MonList {
+            monitors: mon
+                .monitors
+                .iter()
+                .map(|e| {
+                    if e.name == monnm {
+                        e.activeWorkspace = aws;
+                    }
+                    return e.to_owned();
+                })
+                .collect(),
+        };
+        return (ws, monr);
+    }
 }
 #[derive(Default)]
 pub struct CloseLayer;
 impl EventHandler for CloseLayer {
-    fn EventHandler(&self, ws: WkspList, mon: MonList, args: Vec<&str>) -> (WkspList, MonList) {}
+    fn EventHandler(&self, ws: WkspList, mon: MonList, args: Vec<&str>) -> (WkspList, MonList) {
+        let wsid = ws.findById(args[0].parse::<i32>().unwrap());
+        let mut aws: Aws = Aws {
+            id: ws.workspaces[wsid].id,
+            name: ws.workspaces[wsid].name,
+        };
+        let monnm = ws.workspaces[wsid].monitor;
+        let monr: MonList = MonList {
+            monitors: mon
+                .monitors
+                .iter()
+                .map(|e| {
+                    if e.name == monnm {
+                        e.activeWorkspace = aws;
+                    }
+                    return e.to_owned();
+                })
+                .collect(),
+        };
+        return (ws, monr);
+    }
 }
 #[derive(Default)]
 pub struct Submap;
 impl EventHandler for Submap {
-    fn EventHandler(&self, ws: WkspList, mon: MonList, args: Vec<&str>) -> (WkspList, MonList) {}
+    fn EventHandler(&self, ws: WkspList, mon: MonList, args: Vec<&str>) -> (WkspList, MonList) {
+        let wsid = ws.findById(args[0].parse::<i32>().unwrap());
+        let mut aws: Aws = Aws {
+            id: ws.workspaces[wsid].id,
+            name: ws.workspaces[wsid].name,
+        };
+        let monnm = ws.workspaces[wsid].monitor;
+        let monr: MonList = MonList {
+            monitors: mon
+                .monitors
+                .iter()
+                .map(|e| {
+                    if e.name == monnm {
+                        e.activeWorkspace = aws;
+                    }
+                    return e.to_owned();
+                })
+                .collect(),
+        };
+        return (ws, monr);
+    }
 }
 #[derive(Default)]
 pub struct ChangeFloatingMode;
 impl EventHandler for ChangeFloatingMode {
-    fn EventHandler(&self, ws: WkspList, mon: MonList, args: Vec<&str>) -> (WkspList, MonList) {}
+    fn EventHandler(&self, ws: WkspList, mon: MonList, args: Vec<&str>) -> (WkspList, MonList) {
+        let wsid = ws.findById(args[0].parse::<i32>().unwrap());
+        let mut aws: Aws = Aws {
+            id: ws.workspaces[wsid].id,
+            name: ws.workspaces[wsid].name,
+        };
+        let monnm = ws.workspaces[wsid].monitor;
+        let monr: MonList = MonList {
+            monitors: mon
+                .monitors
+                .iter()
+                .map(|e| {
+                    if e.name == monnm {
+                        e.activeWorkspace = aws;
+                    }
+                    return e.to_owned();
+                })
+                .collect(),
+        };
+        return (ws, monr);
+    }
 }
 #[derive(Default)]
 pub struct Urgent;
 impl EventHandler for Urgent {
-    fn EventHandler(&self, ws: WkspList, mon: MonList, args: Vec<&str>) -> (WkspList, MonList) {}
+    fn EventHandler(&self, ws: WkspList, mon: MonList, args: Vec<&str>) -> (WkspList, MonList) {
+        let wsid = ws.findById(args[0].parse::<i32>().unwrap());
+        let mut aws: Aws = Aws {
+            id: ws.workspaces[wsid].id,
+            name: ws.workspaces[wsid].name,
+        };
+        let monnm = ws.workspaces[wsid].monitor;
+        let monr: MonList = MonList {
+            monitors: mon
+                .monitors
+                .iter()
+                .map(|e| {
+                    if e.name == monnm {
+                        e.activeWorkspace = aws;
+                    }
+                    return e.to_owned();
+                })
+                .collect(),
+        };
+        return (ws, monr);
+    }
 }
 #[derive(Default)]
 pub struct Minimize;
 impl EventHandler for Minimize {
-    fn EventHandler(&self, ws: WkspList, mon: MonList, args: Vec<&str>) -> (WkspList, MonList) {}
+    fn EventHandler(&self, ws: WkspList, mon: MonList, args: Vec<&str>) -> (WkspList, MonList) {
+        let wsid = ws.findById(args[0].parse::<i32>().unwrap());
+        let mut aws: Aws = Aws {
+            id: ws.workspaces[wsid].id,
+            name: ws.workspaces[wsid].name,
+        };
+        let monnm = ws.workspaces[wsid].monitor;
+        let monr: MonList = MonList {
+            monitors: mon
+                .monitors
+                .iter()
+                .map(|e| {
+                    if e.name == monnm {
+                        e.activeWorkspace = aws;
+                    }
+                    return e.to_owned();
+                })
+                .collect(),
+        };
+        return (ws, monr);
+    }
 }
 #[derive(Default)]
 pub struct Screencast;
 impl EventHandler for Screencast {
-    fn EventHandler(&self, ws: WkspList, mon: MonList, args: Vec<&str>) -> (WkspList, MonList) {}
+    fn EventHandler(&self, ws: WkspList, mon: MonList, args: Vec<&str>) -> (WkspList, MonList) {
+        let wsid = ws.findById(args[0].parse::<i32>().unwrap());
+        let mut aws: Aws = Aws {
+            id: ws.workspaces[wsid].id,
+            name: ws.workspaces[wsid].name,
+        };
+        let monnm = ws.workspaces[wsid].monitor;
+        let monr: MonList = MonList {
+            monitors: mon
+                .monitors
+                .iter()
+                .map(|e| {
+                    if e.name == monnm {
+                        e.activeWorkspace = aws;
+                    }
+                    return e.to_owned();
+                })
+                .collect(),
+        };
+        return (ws, monr);
+    }
 }
 #[derive(Default)]
 pub struct WindowTitle;
 impl EventHandler for WindowTitle {
-    fn EventHandler(&self, ws: WkspList, mon: MonList, args: Vec<&str>) -> (WkspList, MonList) {}
+    fn EventHandler(&self, ws: WkspList, mon: MonList, args: Vec<&str>) -> (WkspList, MonList) {
+        let wsid = ws.findById(args[0].parse::<i32>().unwrap());
+        let mut aws: Aws = Aws {
+            id: ws.workspaces[wsid].id,
+            name: ws.workspaces[wsid].name,
+        };
+        let monnm = ws.workspaces[wsid].monitor;
+        let monr: MonList = MonList {
+            monitors: mon
+                .monitors
+                .iter()
+                .map(|e| {
+                    if e.name == monnm {
+                        e.activeWorkspace = aws;
+                    }
+                    return e.to_owned();
+                })
+                .collect(),
+        };
+        return (ws, monr);
+    }
 }
 
 pub struct EventBuilder;
