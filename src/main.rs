@@ -4,8 +4,11 @@
 
 mod events;
 
-use events::{Events,Event};
+use events::Event;
 
+extern crate strum; // 0.10.0
+#[macro_use]
+extern crate strum_macros; // 0.10.0
 extern crate clap;
 extern crate serde_derive;
 extern crate serde_json;
@@ -74,7 +77,7 @@ struct Args {
     monitor: u32,
 }
 
-fn main() {
+fn main() -> ! {
     // get hyprland instance for socket path
     let hyprland_instance = env::var("HYPRLAND_INSTANCE_SIGNATURE").unwrap();
 
@@ -92,7 +95,7 @@ fn main() {
 
     let monstr = String::from_utf8(monoutput.stdout).unwrap();
     let mut monjson: Vec<Mon> = serde_json::from_str(&monstr).unwrap();
-    println!("{:?}", monjson[0]);
+    // println!("{:?}", monjson[0]);
 
     let wsoutput = Command::new("/usr/bin/hyprctl")
         .arg("workspaces")
@@ -103,37 +106,32 @@ fn main() {
     let wsstr = String::from_utf8(wsoutput.stdout).unwrap();
     let mut wsjson: Vec<Wksp> = serde_json::from_str(&wsstr).unwrap();
 
-    let mut stream = UnixStream::connect(path).unwrap();
+    loop {
+        let mut strm = UnixStream::connect(path).unwrap();
 
-    let stream = BufReader::new(stream);
+        let stream = BufReader::new(strm);
 
-    let events: [Event] = stream.lines().into_iter().map(|&e| {
-        let arr = e.as_ref().unwrap().find(">>").unwrap();
-        let x = e.as_ref().unwrap()[0..arr];
-        let args: Vec<&str> = e.as_ref().unwrap()[(arr + 2)..].split(',').collect();
-    }).collect()
-
-    for line in stream.lines() {
-        // println!("{:?}", line.as_ref().unwrap());
-        let arr = line.as_ref().unwrap().find(">>").unwrap();
-        let e = &line.as_ref().unwrap()[0..arr];
-        let args: Vec<&str> = line.as_ref().unwrap()[(arr + 2)..].split(',').collect();
-        let argsstring = args.join(" ");
+        stream.lines().for_each(|e| {
+            let arr = e.as_ref().unwrap().find(">>").unwrap();
+            let x = &e.as_ref().unwrap()[0..arr];
+            let args: Vec<&str> = e.as_ref().unwrap()[(arr + 2)..].split(',').collect();
+            println!("{}", x);
+        })
     }
 
-    if let Some(exit_code) = monoutput.status.code() {
-        if exit_code == 0 {
-            println!("Ok.");
-        } else {
-            eprintln!("Failed.");
-        }
-    } else if let Some(exit_code) = wsoutput.status.code() {
-        if exit_code == 0 {
-            println!("Ok.");
-        } else {
-            eprintln!("Failed.");
-        }
-    } else {
-        eprintln!("Interrupted!");
-    }
+    // if let Some(exit_code) = monoutput.status.code() {
+    //     if exit_code == 0 {
+    //         println!("Ok.");
+    //     } else {
+    //         eprintln!("Failed.");
+    //     }
+    // } else if let Some(exit_code) = wsoutput.status.code() {
+    //     if exit_code == 0 {
+    //         println!("Ok.");
+    //     } else {
+    //         eprintln!("Failed.");
+    //     }
+    // } else {
+    //     eprintln!("Interrupted!");
+    // }
 }
