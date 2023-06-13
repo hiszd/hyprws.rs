@@ -2,9 +2,10 @@
 #![allow(non_snake_case)]
 #![allow(non_camel_case_types)]
 
+mod display;
 mod events;
 
-use events::Event;
+use events::CB;
 
 extern crate strum; // 0.10.0
 #[macro_use]
@@ -14,14 +15,15 @@ extern crate serde_derive;
 extern crate serde_json;
 use clap::Parser;
 use serde_derive::{Deserialize, Serialize};
+use serde_json::de::IoRead;
 use serde_json::Value;
-use std::thread;
 use std::{env, ops::IndexMut};
 use std::{error::Error, process::Command};
 use std::{
     fmt,
     io::{Read, Write},
 };
+use std::{fs::read, thread};
 use std::{
     io,
     os::unix::net::{UnixListener, UnixStream},
@@ -32,28 +34,28 @@ use std::{
 };
 use strum::IntoEnumIterator;
 
-use crate::events::{EventBuilder, EventHandler};
+use crate::events::CBType;
 
-#[derive(Debug, Serialize, Deserialize, Copy, Clone)]
-struct Aws<'a> {
+#[derive(Debug, Serialize, Deserialize, Clone)]
+struct Aws {
     id: i32,
-    name: &'a str,
+    name: String,
 }
 
-#[derive(Debug, Serialize, Deserialize, Copy, Clone)]
-struct Mon<'a> {
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct Mon {
     id: i32,
-    name: &'a str,
-    description: &'a str,
-    make: &'a str,
-    model: &'a str,
-    serial: &'a str,
+    name: String,
+    description: String,
+    make: String,
+    model: String,
+    serial: String,
     width: u32,
     height: u32,
     refreshRate: f32,
     x: u32,
     y: u32,
-    activeWorkspace: Aws<'a>,
+    activeWorkspace: Aws,
     reserved: [u32; 4],
     scale: f32,
     transform: u32,
@@ -63,77 +65,112 @@ struct Mon<'a> {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct MonList<'a> {
-    pub monitors: Vec<Mon<'a>>,
+pub struct MonList {
+    pub monitors: Vec<Mon>,
 }
 
-impl MonList<'_> {
-    pub fn findById(&self, id: i32) -> (Mon, usize) {
-        let mut mon: Mon;
-        let mut idx: usize;
+impl MonList {
+    pub fn findById(&self, id: i32) -> usize {
+        let mut idx: usize = 0;
         self.monitors.iter().enumerate().for_each(|(i, e)| {
             if e.id == id {
-                mon = e.to_owned();
                 idx = i;
             }
         });
-        return (mon, idx);
+        idx
     }
-    pub fn findByName(&self, name: &str) -> (Mon, usize) {
-        let mut mon: Mon;
-        let mut idx: usize;
+    pub fn findByName(&self, name: &str) -> usize {
+        let mut idx: usize = 0;
         self.monitors.iter().enumerate().for_each(|(i, e)| {
             if e.name == name {
-                mon = e.to_owned();
                 idx = i;
             }
         });
-        return (mon, idx);
+        idx
     }
-}
-
-#[derive(Debug, Serialize, Deserialize, Copy, Clone)]
-struct Wksp<'a> {
-    id: i32,
-    name: &'a str,
-    monitor: &'a str,
-    windows: u32,
-    hasfullscreen: bool,
-    lastwindow: &'a str,
-    lastwindowtitle: &'a str,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct WkspList<'a> {
-    pub workspaces: Vec<Wksp<'a>>,
+pub struct Wksp {
+    id: i32,
+    name: String,
+    monitor: String,
+    windows: u32,
+    hasfullscreen: bool,
+    lastwindow: String,
+    lastwindowtitle: String,
 }
 
-impl WkspList<'_> {
+#[derive(Debug, Clone)]
+pub struct WkspList {
+    pub workspaces: Vec<Wksp>,
+}
+
+impl WkspList {
     pub fn findById(&self, id: i32) -> usize {
-        let mut idx: usize;
+        let mut idx: usize = 0;
         self.workspaces.iter().enumerate().for_each(|(i, e)| {
             if e.id == id {
                 idx = i;
             }
         });
-        return idx;
+        idx
     }
     pub fn findByName(&self, name: &str) -> usize {
-        let mut idx: usize;
+        let mut idx: usize = 0;
         self.workspaces.iter().enumerate().for_each(|(i, e)| {
             if e.name == name {
                 idx = i;
             }
         });
-        return idx;
+        idx
+    }
+    pub fn findByMonName(&self, name: &str) -> usize {
+        let mut idx: usize = 0;
+        self.workspaces.iter().enumerate().for_each(|(i, e)| {
+            if e.monitor == name {
+                idx = i;
+            }
+        });
+        idx
+    }
+    pub fn filterByMonName(&self, name: &str) -> Vec<Wksp> {
+        let mut ws = self.workspaces.clone();
+        ws.into_iter().filter(|&e| e.monitor == name).collect()
     }
 }
 
 #[derive(Parser, Debug, Clone)]
 #[command(author, version, about, long_about = None)]
 struct Args {
-    #[arg(default_value_t = 0, short, long)]
-    monitor: u32,
+    #[arg(default_value_t = String::from("eDP-1"), short, long)]
+    monitor: String,
+}
+
+fn get_monitors() -> MonList {
+    let monoutput = Command::new("/usr/bin/hyprctl")
+        .arg("monitors")
+        .arg("-j")
+        .output()
+        .unwrap();
+    let monstr = String::from_utf8(monoutput.stdout).unwrap();
+    let mons = serde_json::to_value(monstr).unwrap();
+    MonList {
+        monitors: serde_json::from_value(mons).unwrap(),
+    }
+}
+
+fn get_workspaces() -> WkspList {
+    let wsoutput = Command::new("/usr/bin/hyprctl")
+        .arg("workspaces")
+        .arg("-j")
+        .output()
+        .unwrap();
+    let wsstr = String::from_utf8(wsoutput.stdout).unwrap();
+    let wsps = serde_json::to_value(wsstr).unwrap();
+    WkspList {
+        workspaces: serde_json::from_value(wsps).unwrap(),
+    }
 }
 
 fn main() -> ! {
@@ -146,26 +183,9 @@ fn main() -> ! {
 
     let args = Args::parse();
 
-    let mut focusedmonid: i32;
+    let mut mon = get_monitors();
 
-    let monoutput = Command::new("/usr/bin/hyprctl")
-        .arg("monitors")
-        .arg("-j")
-        .output()
-        .unwrap();
-
-    let monstr = String::from_utf8(monoutput.stdout).unwrap();
-    let mut mon: Vec<Mon> = serde_json::from_str(&monstr).unwrap();
-    // println!("{:?}", monjson[0]);
-
-    let wsoutput = Command::new("/usr/bin/hyprctl")
-        .arg("workspaces")
-        .arg("-j")
-        .output()
-        .unwrap();
-
-    let wsstr = String::from_utf8(wsoutput.stdout).unwrap();
-    let mut ws: WkspList = serde_json::from_str(&wsstr).unwrap();
+    let mut ws = get_workspaces();
 
     loop {
         let mut strm = UnixStream::connect(path).unwrap();
@@ -175,26 +195,15 @@ fn main() -> ! {
         stream.lines().for_each(|e| {
             let arr = e.as_ref().unwrap().find(">>").unwrap();
             let x = &e.as_ref().unwrap()[0..arr];
-            let args: Vec<&str> = e.as_ref().unwrap()[(arr + 2)..].split(',').collect();
-            let e = EventBuilder::new(x);
-            let (wsn, monn) = e.EventHandler(ws, mon);
-            println!("{}", x);
+            // let args: Vec<&str> = e.as_ref().unwrap()[(arr + 2)..].split(',').collect();
+            match CB(x) {
+                CBType::Monitors => mon = get_monitors(),
+                CBType::Workspaces => ws = get_workspaces(),
+                CBType::MandW => {
+                    mon = get_monitors();
+                    ws = get_workspaces()
+                }
+            }
         })
     }
-
-    // if let Some(exit_code) = monoutput.status.code() {
-    //     if exit_code == 0 {
-    //         println!("Ok.");
-    //     } else {
-    //         eprintln!("Failed.");
-    //     }
-    // } else if let Some(exit_code) = wsoutput.status.code() {
-    //     if exit_code == 0 {
-    //         println!("Ok.");
-    //     } else {
-    //         eprintln!("Failed.");
-    //     }
-    // } else {
-    //     eprintln!("Interrupted!");
-    // }
 }
