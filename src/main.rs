@@ -136,7 +136,7 @@ impl WkspList {
     }
     pub fn filterByMonName(&self, name: &str) -> Vec<Wksp> {
         let mut ws = self.workspaces.clone();
-        ws.into_iter().filter(|&e| e.monitor == name).collect()
+        ws.into_iter().filter(|e| e.monitor == name).collect()
     }
 }
 
@@ -153,11 +153,8 @@ fn get_monitors() -> MonList {
         .arg("-j")
         .output()
         .unwrap();
-    let monstr = String::from_utf8(monoutput.stdout).unwrap();
-    let mons = serde_json::to_value(monstr).unwrap();
-    MonList {
-        monitors: serde_json::from_value(mons).unwrap(),
-    }
+    let monjson: Vec<Mon> = serde_json::from_slice(&monoutput.stdout).unwrap();
+    MonList { monitors: monjson }
 }
 
 fn get_workspaces() -> WkspList {
@@ -166,11 +163,8 @@ fn get_workspaces() -> WkspList {
         .arg("-j")
         .output()
         .unwrap();
-    let wsstr = String::from_utf8(wsoutput.stdout).unwrap();
-    let wsps = serde_json::to_value(wsstr).unwrap();
-    WkspList {
-        workspaces: serde_json::from_value(wsps).unwrap(),
-    }
+    let wsjson: Vec<Wksp> = serde_json::from_slice(&wsoutput.stdout).unwrap();
+    WkspList { workspaces: wsjson }
 }
 
 fn main() -> ! {
