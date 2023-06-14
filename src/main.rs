@@ -137,15 +137,18 @@ impl WkspList {
     }
     pub fn filterByMonName(&self, name: &str) -> Vec<Wksp> {
         let mut ws = self.workspaces.clone();
-        ws.into_iter().filter(|e| e.monitor == name).collect()
+        ws.sort_by(|a, b| a.name.partial_cmp(&b.name).unwrap());
+        ws.into_iter()
+            .filter(|e| (e.monitor == name && e.name != "special"))
+            .collect()
     }
 }
 
 #[derive(Parser, Debug, Clone)]
 #[command(author, version, about, long_about = None)]
 struct Args {
-    #[arg(default_value_t = String::from("eDP-1"), short, long)]
-    monitor: String,
+    #[arg(default_value_t = 0, short, long)]
+    monitor: u32,
 }
 
 fn get_monitors() -> MonList {
@@ -182,7 +185,9 @@ fn main() -> ! {
 
     let mut ws = get_workspaces();
 
-    let mut di = Disp::new(&args.monitor);
+    let mut di = Disp::new(&mon.monitors[mon.findById(args.monitor as i32)].name);
+
+    di.update(ws.clone(), mon.clone());
 
     loop {
         let mut strm = UnixStream::connect(path).unwrap();

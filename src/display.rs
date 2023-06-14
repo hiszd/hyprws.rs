@@ -1,18 +1,30 @@
-use crate::{MonList, Wksp, WkspList};
+use crate::{Mon, MonList, Wksp, WkspList};
+
+pub fn workspaceEl(wsnm: &str, isfocused: bool) -> String {
+    let mut class: String = String::from("wsnorm");
+    if isfocused {
+        class = "wsfocused".to_owned();
+    }
+    "(button :width 10 :onclick \"hyprctl dispatch workspace ".to_owned()
+        + wsnm
+        + "\" :onrightclick \"hyprctl dispatch workspace "
+        + wsnm
+        + " && /home/zion/.config/hypr/default_app\" :class \""
+        + &class
+        + "\" \""
+        + wsnm
+        + "\")"
+}
+
+struct WsStatus {
+    name: String,
+    isfocused: bool,
+}
 
 pub struct Disp {
     monname: String,
     parent: (String, String),
-}
-
-pub fn workspaceEl(wsnm: &str) -> String {
-    "(button :onclick \"hyprctl dispatch workspace ".to_owned()
-        + wsnm
-        + "\" :onrightclick \"hyprctl dispatch workspace "
-        + wsnm
-        + " && /home/zion/.config/hypr/default_app\" :class \"wksp\" \"${ic["
-        + wsnm
-        + "]}\")"
+    bx: (String, String),
 }
 
 impl Disp {
@@ -24,17 +36,30 @@ impl Disp {
                 "(eventbox".to_owned(),
                 ")".to_owned(),
             ),
+            bx: (
+                "(box :halign \"start\" :class \"works\" :orientation \"h\" :space-evenly \"true\""
+                    .to_owned(),
+                ")".to_owned(),
+            ),
         }
     }
 
-    pub fn build(&self, ws: Vec<Wksp>) -> String {
-        let wsels: Vec<String> = ws.into_iter().map(|e| e.name).collect();
-        let mut wselsstr: String = String::new();
-        wsels
+    pub fn build(&self, ws: Vec<Wksp>, mon: Mon) -> String {
+        let mut wsself: Vec<Wksp> = ws.clone();
+        wsself.sort_by(|a, b| a.name.partial_cmp(&b.name).unwrap());
+        let wsels: Vec<WsStatus> = ws
             .into_iter()
-            .for_each(|e| wselsstr = wselsstr.to_owned() + &workspaceEl(&e));
-        println!("wsel {:?}", &wselsstr);
-        self.parent.0.to_owned() + "\n" + &wselsstr + "\n" + &self.parent.1
+            .map(|e| WsStatus {
+                name: e.name.to_owned(),
+                isfocused: (mon.activeWorkspace.name == e.name),
+            })
+            .collect();
+        let mut wselsstr: String = String::new();
+        wsels.into_iter().for_each(|e| {
+            wselsstr = wselsstr.to_owned() + &workspaceEl(&e.name, e.isfocused);
+        });
+        // println!("wsel {:?}", &wselsstr);
+        self.parent.0.to_owned() + &self.bx.0 + &wselsstr + &self.bx.1 + &self.parent.1
     }
 
     pub fn update(&mut self, ws: WkspList, mons: MonList) {
@@ -42,7 +67,7 @@ impl Disp {
         let moni = mons.findByName(&self.monname);
         // workspace index
         let wsi = ws.filterByMonName(&self.monname);
-        let wsel = self.build(wsi);
+        let wsel = self.build(wsi, mons.monitors[moni].clone());
         println!("{}", wsel);
     }
 }
