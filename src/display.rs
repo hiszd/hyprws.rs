@@ -1,6 +1,6 @@
 use crate::{MonList, Wksp, WkspList};
 
-struct Disp {
+pub struct Disp {
     monname: String,
     parent: (String, String),
 }
@@ -29,8 +29,12 @@ impl Disp {
 
     pub fn build(&self, ws: Vec<Wksp>) -> String {
         let wsels: Vec<String> = ws.into_iter().map(|e| e.name).collect();
-        let wselsstr: String = wsels.iter().map(|e| workspaceEl(e)).collect();
-        self.parent.0.to_owned() + &wselsstr + &self.parent.1
+        let mut wselsstr: String = String::new();
+        wsels
+            .into_iter()
+            .for_each(|e| wselsstr = wselsstr.to_owned() + &workspaceEl(&e));
+        println!("wsel {:?}", &wselsstr);
+        self.parent.0.to_owned() + "\n" + &wselsstr + "\n" + &self.parent.1
     }
 
     pub fn update(&mut self, ws: WkspList, mons: MonList) {

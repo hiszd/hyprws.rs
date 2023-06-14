@@ -5,6 +5,7 @@
 mod display;
 mod events;
 
+use display::Disp;
 use events::CB;
 
 extern crate strum; // 0.10.0
@@ -181,6 +182,8 @@ fn main() -> ! {
 
     let mut ws = get_workspaces();
 
+    let mut di = Disp::new(&args.monitor);
+
     loop {
         let mut strm = UnixStream::connect(path).unwrap();
 
@@ -198,6 +201,7 @@ fn main() -> ! {
                     ws = get_workspaces()
                 }
             }
+            di.update(ws.clone(), mon.clone());
         })
     }
 }
