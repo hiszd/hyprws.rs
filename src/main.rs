@@ -152,7 +152,7 @@ struct Args {
 }
 
 fn get_monitors() -> MonList {
-    let monoutput = Command::new("/usr/bin/hyprctl")
+    let monoutput = Command::new("hyprctl")
         .arg("monitors")
         .arg("-j")
         .output()
@@ -162,7 +162,7 @@ fn get_monitors() -> MonList {
 }
 
 fn get_workspaces() -> WkspList {
-    let wsoutput = Command::new("/usr/bin/hyprctl")
+    let wsoutput = Command::new("hyprctl")
         .arg("workspaces")
         .arg("-j")
         .output()
